@@ -1,21 +1,39 @@
 let http = require('http')
 let fs = require('fs')
 let url = require('url')
+const { log } = require('console')
 
 let app = http.createServer((req, res) => {
     let page_url = req.url
     let query_url = url.parse(req.url, true).query
     
     //Query String Manage
-    if (page_url === '/') {
-        page_url = '/index.html'
-    }
-    else if (req.url === '/favicon.ico') {
+    if (req.url === '/favicon.ico') {
         return res.writeHead(404)
     }
 
-    let title = query_url.id
-    let template = `
+    //page content setting
+    let title = undefined
+    console.log(query_url.id);
+    switch(query_url.id) {
+      case undefined:
+        title = 'Welcome!'
+        break
+      case 'html':
+        title = 'HTML'
+        break
+      case 'css':
+        title = 'CSS'
+        break
+      case 'js':
+        title = 'JavaScript'
+        break
+    }
+    
+    fs.readFile(`content/${query_url.id}.txt`, 'utf8', (err, content) => {
+      let desc = content
+      console.log(desc);
+      let template = `
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -30,14 +48,14 @@ let app = http.createServer((req, res) => {
     <li><a href="/?id=js">JavaScript</a></li>
   </ol>
   <h2>${title}</h2>
-  <p></p>
+  <p>${desc}</p>
 </body>
 </html>
 `
-
-    //go to certain Page
-    res.writeHead(200, {"Content-Type" : "text/html"})
-    res.end(template)
+  //go to certain Page
+  res.writeHead(200, {"Content-Type" : "text/html"})
+  res.end(template)
+    })
 })
 
 app.listen(3000)
